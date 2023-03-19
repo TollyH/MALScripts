@@ -1,7 +1,7 @@
 # Warning: This script requires that your list page is FULLY scrolled to the
-#          bottom saving as HTML. It also requires that the "more" button has
-#          been pressed on every list entry. The following JavaScript can do
-#          that for you (scroll to the bottom FIRST):
+#          bottom before saving as HTML. It also requires that the "more"
+#          button has been pressed on every list entry. The following
+#          JavaScript can do that for you (scroll to the bottom FIRST):
 #              var moreButtons = document.getElementsByClassName("more");
 #              for (let i = 0; i < moreButtons.length; i++) {
 #                  moreButtons[i].children[0].click();
