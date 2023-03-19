@@ -25,6 +25,7 @@ class Anime:
     episode_count: int
     watched_episodes: int
     list_status: str
+    anime_type: str
 
 
 if len(sys.argv) < 2:
@@ -38,11 +39,12 @@ names = [x.get_text(' ', True) for x in soup.select(".title > a")[1:]]
 more_sections = [x.get_text(' ', True) for x in soup.select(".borderRBL")]
 progress_labels = [x.get_text(' ', True) for x in soup.select(".progress")[1:]]
 statuses = [x["class"][-1] for x in soup.select(".status")[1:]]
+types = [x.get_text(' ', True) for x in soup.select(".type")[1:]]
 
 all_anime: list[Anime] = []
 
-for name, more, prog, status in zip(
-        names, more_sections, progress_labels, statuses):
+for name, more, prog, status, anime_type in zip(
+        names, more_sections, progress_labels, statuses, types):
     per_ep_match = RE_PER_EPISODE.search(more)
     assert per_ep_match is not None
     seconds = (
@@ -65,7 +67,7 @@ for name, more, prog, status in zip(
     else:
         total = int(prog_match[2])
 
-    all_anime.append(Anime(name, seconds, total, watched, status))
+    all_anime.append(Anime(name, seconds, total, watched, status, anime_type))
 
 total_watched = 0
 total_unwatched = 0
@@ -126,8 +128,24 @@ anime_with_time = [
     a for a in anime_with_time if a[1] > 0 and a[0].list_status != "dropped"
 ]
 
-print("\n\nShortest Titles to Watch:")
+print("\n\nShortest Titles to Watch (All):")
 for index, (anime, unwatched) in enumerate(anime_with_time):
+    if unwatched == 0:
+        continue
+    unwatched_hours, remainder = divmod(unwatched, 3600)
+    unwatched_minutes, unwatched_seconds = divmod(remainder, 60)
+    print(
+        f"{index + 1:03}. {anime.name} ("
+        f"{unwatched_hours:02} hour{'s'[:unwatched_hours ^ 1]}, "
+        f"{unwatched_minutes:02} minute{'s'[:unwatched_minutes ^ 1]} and "
+        f"{unwatched_seconds:02} second{'s'[:unwatched_seconds ^ 1]})"
+    )
+input("Press Enter to continue...")
+
+
+print("\n\nShortest Titles to Watch (TV Anime/Movies Only):")
+for index, (anime, unwatched) in enumerate(
+        a for a in anime_with_time if a[0].anime_type in ("TV", "Movie")):
     if unwatched == 0:
         continue
     unwatched_hours, remainder = divmod(unwatched, 3600)
