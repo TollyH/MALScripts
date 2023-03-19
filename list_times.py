@@ -24,6 +24,7 @@ class Anime:
     seconds_per_ep: int
     episode_count: int
     watched_episodes: int
+    list_status: str
 
 
 if len(sys.argv) < 2:
@@ -36,10 +37,12 @@ with open(sys.argv[1], encoding="utf8") as file:
 names = [x.get_text(' ', True) for x in soup.select(".title > a")[1:]]
 more_sections = [x.get_text(' ', True) for x in soup.select(".borderRBL")]
 progress_labels = [x.get_text(' ', True) for x in soup.select(".progress")[1:]]
+statuses = [x["class"][-1] for x in soup.select(".status")[1:]]
 
 all_anime: list[Anime] = []
 
-for name, more, prog in zip(names, more_sections, progress_labels):
+for name, more, prog, status in zip(
+        names, more_sections, progress_labels, statuses):
     per_ep_match = RE_PER_EPISODE.search(more)
     assert per_ep_match is not None
     seconds = (
@@ -62,7 +65,7 @@ for name, more, prog in zip(names, more_sections, progress_labels):
     else:
         total = int(prog_match[2])
 
-    all_anime.append(Anime(name, seconds, total, watched))
+    all_anime.append(Anime(name, seconds, total, watched, status))
 
 total_watched = 0
 total_unwatched = 0
@@ -70,11 +73,14 @@ grand_total_seconds = 0
 
 for anime in all_anime:
     total_watched += anime.watched_episodes * anime.seconds_per_ep
-    total_unwatched += max(
-        (anime.episode_count - anime.watched_episodes) * anime.seconds_per_ep,
-        0
-    )
-    grand_total_seconds += anime.episode_count * anime.seconds_per_ep
+    if anime.list_status == "dropped":
+        grand_total_seconds += anime.watched_episodes * anime.seconds_per_ep
+    else:
+        total_unwatched += max(
+            (anime.episode_count - anime.watched_episodes)
+            * anime.seconds_per_ep, 0
+        )
+        grand_total_seconds += anime.episode_count * anime.seconds_per_ep
 
 watched_days, remainder = divmod(total_watched, 86400)
 watched_hours, remainder = divmod(remainder, 3600)
@@ -116,7 +122,9 @@ for anime in all_anime:
         0
     )))
 anime_with_time.sort(key=lambda x: x[1])
-anime_with_time = [a for a in anime_with_time if a[1] > 0]
+anime_with_time = [
+    a for a in anime_with_time if a[1] > 0 and a[0].list_status != "dropped"
+]
 
 print("\n\nShortest Titles to Watch:")
 for index, (anime, unwatched) in enumerate(anime_with_time):
