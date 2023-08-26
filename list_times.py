@@ -117,19 +117,59 @@ print(
 )
 input("Press Enter to continue...")
 
-anime_with_time: list[tuple[Anime, int]] = []
+unwatched_time: list[tuple[Anime, int]] = []
 for anime in all_anime:
-    anime_with_time.append((anime, max(
+    unwatched_time.append((anime, max(
         (anime.episode_count - anime.watched_episodes) * anime.seconds_per_ep,
         0
     )))
-anime_with_time.sort(key=lambda x: x[1])
-anime_with_time = [
-    a for a in anime_with_time if a[1] > 0 and a[0].list_status != "dropped"
+unwatched_time.sort(key=lambda x: x[1])
+unwatched_time = [
+    a for a in unwatched_time if a[1] > 0 and a[0].list_status != "dropped"
 ]
 
+watched_time: list[tuple[Anime, int]] = []
+for anime in all_anime:
+    watched_time.append((anime, max(
+        anime.watched_episodes * anime.seconds_per_ep, 0
+    )))
+watched_time.sort(key=lambda x: x[1], reverse=True)
+watched_time = [
+    a for a in watched_time if a[1] > 0 and a[0].list_status != "dropped"
+]
+
+print("\n\nLongest Titles Watched (All):")
+for index, (anime, watched) in enumerate(watched_time):
+    if watched == 0:
+        continue
+    watched_hours, remainder = divmod(watched, 3600)
+    watched_minutes, watched_seconds = divmod(remainder, 60)
+    print(
+        f"{index + 1:03}. {anime.name} ("
+        f"{watched_hours:02} hour{'s'[:watched_hours ^ 1]}, "
+        f"{watched_minutes:02} minute{'s'[:watched_minutes ^ 1]} and "
+        f"{watched_seconds:02} second{'s'[:watched_seconds ^ 1]})"
+    )
+input("Press Enter to continue...")
+
+
+print("\n\nLongest Titles Watched (TV Anime/Movies Only):")
+for index, (anime, watched) in enumerate(
+        a for a in watched_time if a[0].anime_type in ("TV", "Movie")):
+    if watched == 0:
+        continue
+    watched_hours, remainder = divmod(watched, 3600)
+    watched_minutes, watched_seconds = divmod(remainder, 60)
+    print(
+        f"{index + 1:03}. {anime.name} ("
+        f"{watched_hours:02} hour{'s'[:watched_hours ^ 1]}, "
+        f"{watched_minutes:02} minute{'s'[:watched_minutes ^ 1]} and "
+        f"{watched_seconds:02} second{'s'[:watched_seconds ^ 1]})"
+    )
+input("Press Enter to continue...")
+
 print("\n\nShortest Titles to Watch (All):")
-for index, (anime, unwatched) in enumerate(anime_with_time):
+for index, (anime, unwatched) in enumerate(unwatched_time):
     if unwatched == 0:
         continue
     unwatched_hours, remainder = divmod(unwatched, 3600)
@@ -145,7 +185,7 @@ input("Press Enter to continue...")
 
 print("\n\nShortest Titles to Watch (TV Anime/Movies Only):")
 for index, (anime, unwatched) in enumerate(
-        a for a in anime_with_time if a[0].anime_type in ("TV", "Movie")):
+        a for a in unwatched_time if a[0].anime_type in ("TV", "Movie")):
     if unwatched == 0:
         continue
     unwatched_hours, remainder = divmod(unwatched, 3600)
