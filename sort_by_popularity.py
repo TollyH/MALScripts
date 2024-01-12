@@ -48,11 +48,10 @@ def main():
     mal_dump_path = ' '.join(sys.argv[1:])
     with open(mal_dump_path, encoding='utf8') as file:
         xml = xmltodict.parse(file.read())
-        file.close()
 
     matched_db_ids = []
     for anime in xml["myanimelist"]["anime"]:
-        if anime["my_status"] not in "Plan to Watch":
+        if anime["my_status"] != "Plan to Watch":
             matched_db_ids.append(anime["series_animedb_id"])
     for matched_id in matched_db_ids:
         add_info(matched_id)
@@ -72,11 +71,9 @@ def main():
 
     with open("result.txt", 'w', encoding='utf8') as file:
         file.writelines(all_lines)
-        file.close()
 
     with open("result-tv-movie-only.txt", 'w', encoding='utf8') as file:
         file.writelines(tv_movie_only_lines)
-        file.close()
 
 
 if __name__ == "__main__":

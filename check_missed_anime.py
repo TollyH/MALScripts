@@ -81,7 +81,6 @@ def main():
     mal_dump_path = ' '.join(sys.argv[1:])
     with open(mal_dump_path, encoding='utf8') as file:
         rawxml = file.read()
-        file.close()
 
     matched_db_ids = re.findall(
         r"<series_animedb_id>(\d+?)</series_animedb_id>", rawxml)
@@ -90,7 +89,6 @@ def main():
 
     with open("result.txt", 'w', encoding='utf8') as file:
         file.writelines(final_lines)
-        file.close()
 
 
 if __name__ == "__main__":
